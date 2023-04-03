@@ -1,5 +1,4 @@
 import json
-import datetime
 from datetime import datetime
 with open('dadosPessoas.json', encoding='utf-8') as pessoas_json:
     dados = json.load(pessoas_json)

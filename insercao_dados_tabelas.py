@@ -1,5 +1,6 @@
 from classConn import DatabaseConnection
 from dados_insercao_pessoas import lista_pessoas
+from dados_insercao_funcionarios import dados_funcionarios
 
 db = DatabaseConnection('localhost', 'funcionario', 'root')
 
@@ -43,6 +44,7 @@ for i in db.cursor.fetchall():
 # Inserindo valores na tabela funcionarios
 comando_funcionarios = 'INSERT INTO funcionarios (i_pessoas, i_situacao, i_vinculo, i_cargo, dt_admissao, salario) ' \
                        'VALUES (?, ?, ?, ?, ?, ?)'
-
+for funcionario in dados_funcionarios:
+    db.query(comando_funcionarios, funcionario)
 
 db.finalizar_conexao()
