@@ -31,7 +31,7 @@ db.query('SELECT * FROM cargos')
 for i in db.cursor.fetchall():
     print(i)
 
-# Inserindo valores na tabelas pessoas
+# Inserindo valores na tabela pessoas
 comando_pessoas = 'INSERT INTO pessoas (nome, cpf, dt_nascimento, email, endereco, numero, bairro, cidade, estado, ' \
                       'uf, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);'
 for pessoa in lista_pessoas:
@@ -39,6 +39,10 @@ for pessoa in lista_pessoas:
 db.query('SELECT * FROM pessoas')
 for i in db.cursor.fetchall():
     print(i)
+
+# Inserindo valores na tabela funcionarios
+comando_funcionarios = 'INSERT INTO funcionarios (i_pessoas, i_situacao, i_vinculo, i_cargo, dt_admissao, salario) ' \
+                       'VALUES (?, ?, ?, ?, ?, ?)'
 
 
 db.finalizar_conexao()
