@@ -20,7 +20,7 @@ class DatabaseConnection:
         self.conectar()
 
     def conectar(self):
-        dados_conn = f'DRIVER={{MySQL ODBC 8.0 Unicode Driver}};SERVER={self.server};DATABASE={self.database};UID={self.username};PWD={self.password}'
+        dados_conn = f'DRIVER={{MySQL ODBC 8.0 Unicode Driver}};SERVER={self.server};DATABASE={self.database};UID={self.username};PWD={self.password};encoding=UTF-8'
         self.conn = pyodbc.connect(dados_conn)
         self.cursor = self.conn.cursor()
         print('Conexão realizada com Sucesso')
