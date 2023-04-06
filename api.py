@@ -10,6 +10,8 @@ def data_string(campo):
 
 # Inicialização
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
+
 
 app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando ordenação automática
 
@@ -66,20 +68,20 @@ def get_pessoas():
     return json.dumps(result, ensure_ascii=False)
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
-@app.route('/api/pessoas', methods=['GET'])
-def get_pessoas():
+@app.route('/api/funcionarios', methods=['GET'])
+def get_funcionarios():
     db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM pessoas"
+    comando = "SELECT * FROM funcionarios"
     db.query(comando)
     result = []
     for dados in db.cursor.fetchall():
-        nova_data = data_string(dados[3])
-        situ = {'id': dados[0], 'nome': dados[1], 'cpf': dados[2], 'dataNascimento': nova_data, 'email': dados[4],
-                'endereco': dados[5], 'numero': dados[6], 'bairro': dados[7], 'cidade': dados[8], 'estado': dados[9],
-                'uf': dados[10], 'cep': dados[11]}
+        nova_data = data_string(dados[5])
+        situ = {'id': dados[0], 'idPessoas': dados[1], 'idSituacao': dados[2], 'idVinculo': dados[3], 'idCargo': dados[4],
+                'dataAdmissao': nova_data, 'salario': dados[6]}
         result.append(situ)
     db.finalizar_conexao()
     return json.dumps(result, ensure_ascii=False)
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
+
 
 app.run()
