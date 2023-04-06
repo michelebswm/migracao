@@ -13,9 +13,12 @@ Criação de 5 tabelas via Python:
 
 Inserção de dados via Python
 
+- Criação da API via Flask:
+  - Método GET geral
+
 ----------------
 Etapas a serem feitas:
-- Criar API para GET, PUT, POST e DELETE
+- Criar API para GET por ID, PUT, POST e DELETE
 
 - Migração de dados de um banco para outro.
 
