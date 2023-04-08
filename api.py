@@ -8,12 +8,14 @@ def data_string(campo):
     data_formatada = campo.strftime('%Y-%m-%d')
     return data_formatada
 
+
 # Inicialização
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 
 
 app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando ordenação automática
+
 
 @app.route('/api/situacao', methods=['GET'])
 def get_situacao():
@@ -29,6 +31,7 @@ def get_situacao():
     # string JSON. charset=utf-8 define o conjunto de caracteres usado na string JSON.
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
+
 @app.route('/api/situacao/<int:id>', methods=['GET'])
 def get_situacaoid(id):
     db = DatabaseConnection('localhost', 'funcionario', 'root')
@@ -39,12 +42,14 @@ def get_situacaoid(id):
     # Caso não haja resultados, retorna-se um erro 404.
     situacao = db.cursor.fetchone()
     if situacao is None:
-        return 'Situacao não encontrada', 404
+        return Response(json.dumps([{'message': 'Situação não encontrada'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 404
     else:
         situ = {'id': situacao[0], 'descricao': situacao[1]}
         result.append(situ)
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
 
 @app.route('/api/vinculo', methods=['GET'])
 def get_vinculo():
@@ -58,6 +63,26 @@ def get_vinculo():
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
+
+@app.route('/api/vinculo/<int:id>', methods=['GET'])
+def get_vinculoid(id):
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    comando = "SELECT * FROM vinculo WHERE i_vinculo = ?"
+    db.query(comando, id)
+    result = []
+    # O método fetchone é utilizado para obter a primeira linha do resultado da query.
+    # Caso não haja resultados, retorna-se um erro 404.
+    vinculo = db.cursor.fetchone()
+    if vinculo is None:
+        return Response(json.dumps([{'message': 'Vínculo não encontrado'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 404
+    else:
+        situ = {'id': vinculo[0], 'descricao': vinculo[1]}
+        result.append(situ)
+    db.finalizar_conexao()
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
+
 @app.route('/api/cargos', methods=['GET'])
 def get_cargos():
     db = DatabaseConnection('localhost', 'funcionario', 'root')
@@ -69,6 +94,26 @@ def get_cargos():
         result.append(situ)
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
+
+@app.route('/api/cargos/<int:id>', methods=['GET'])
+def get_cargosid(id):
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    comando = "SELECT * FROM cargos WHERE i_cargo = ?"
+    db.query(comando, id)
+    result = []
+    # O método fetchone é utilizado para obter a primeira linha do resultado da query.
+    # Caso não haja resultados, retorna-se um erro 404.
+    cargo = db.cursor.fetchone()
+    if cargo is None:
+        return Response(json.dumps([{'message': 'Cargo não encontrado'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 404
+    else:
+        situ = {'id': cargo[0], 'descricao': cargo[1]}
+        result.append(situ)
+    db.finalizar_conexao()
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
 
 @app.route('/api/pessoas', methods=['GET'])
 def get_pessoas():
@@ -86,6 +131,27 @@ def get_pessoas():
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
+
+@app.route('/api/pessoas/<int:id>', methods=['GET'])
+def get_pessoasid(id):
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    comando = "SELECT * FROM pessoas WHERE i_pessoas = ?"
+    db.query(comando, id)
+    result = []
+    pessoa = db.cursor.fetchone()
+    if pessoa is None:
+        return Response(json.dumps([{'message': 'Pessoa não encontrada'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 404
+    else:
+        nova_data = data_string(pessoa[3])
+        situ = {'id': pessoa[0], 'nome': pessoa[1], 'cpf': pessoa[2], 'dataNascimento': nova_data, 'email': pessoa[4],
+                'endereco': pessoa[5], 'numero': pessoa[6], 'bairro': pessoa[7], 'cidade': pessoa[8], 'estado': pessoa[9],
+                'uf': pessoa[10], 'cep': pessoa[11]}
+        result.append(situ)
+    db.finalizar_conexao()
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
+
 @app.route('/api/funcionarios', methods=['GET'])
 def get_funcionarios():
     db = DatabaseConnection('localhost', 'funcionario', 'root')
@@ -100,6 +166,26 @@ def get_funcionarios():
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
+
+
+@app.route('/api/funcionarios/<int:id>', methods=['GET'])
+def get_funcionariosid(id):
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    comando = "SELECT * FROM funcionarios WHERE i_funcionarios = ?"
+    db.query(comando, id)
+    result = []
+    funcionario = db.cursor.fetchone()
+    if funcionario is None:
+        return Response(json.dumps([{'message': 'Funcionário não encontrado'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 404
+    else:
+        nova_data = data_string(funcionario[5])
+        situ = {'id': funcionario[0], 'idPessoas': funcionario[1], 'idSituacao': funcionario[2],
+                'idVinculo': funcionario[3], 'idCargo': funcionario[4],
+                'dataAdmissao': nova_data, 'salario': funcionario[6]}
+        result.append(situ)
+    db.finalizar_conexao()
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
 app.run()
