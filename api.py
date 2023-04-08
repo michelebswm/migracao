@@ -1,5 +1,5 @@
 from classConn import DatabaseConnection
-from flask import Flask
+from flask import Flask, Response
 import simplejson as json
 
 
@@ -15,7 +15,6 @@ app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 
 app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando ordenação automática
 
-# Define a rota para o método GET
 @app.route('/api/situacao', methods=['GET'])
 def get_situacao():
     db = DatabaseConnection('localhost', 'funcionario', 'root')
@@ -26,7 +25,26 @@ def get_situacao():
         situ = {'id': dados[0], 'descricao': dados[1]}
         result.append(situ)
     db.finalizar_conexao()
-    return json.dumps(result, ensure_ascii=False)
+    # O parâmetro content_type define o tipo de conteúdo da resposta. application/json indica que a resposta é uma
+    # string JSON. charset=utf-8 define o conjunto de caracteres usado na string JSON.
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
+@app.route('/api/situacao/<int:id>', methods=['GET'])
+def get_situacaoid(id):
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    comando = "SELECT * FROM situacao WHERE i_situacao = ?"
+    db.query(comando, id)
+    result = []
+    # O método fetchone é utilizado para obter a primeira linha do resultado da query.
+    # Caso não haja resultados, retorna-se um erro 404.
+    situacao = db.cursor.fetchone()
+    if situacao is None:
+        return 'Situacao não encontrada', 404
+    else:
+        situ = {'id': situacao[0], 'descricao': situacao[1]}
+        result.append(situ)
+    db.finalizar_conexao()
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 @app.route('/api/vinculo', methods=['GET'])
 def get_vinculo():
@@ -38,7 +56,7 @@ def get_vinculo():
         situ = {'id': dados[0], 'descricao': dados[1]}
         result.append(situ)
     db.finalizar_conexao()
-    return json.dumps(result, ensure_ascii=False)
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 @app.route('/api/cargos', methods=['GET'])
 def get_cargos():
@@ -50,7 +68,7 @@ def get_cargos():
         situ = {'id': dados[0], 'descricao': dados[1]}
         result.append(situ)
     db.finalizar_conexao()
-    return json.dumps(result, ensure_ascii=False)
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 @app.route('/api/pessoas', methods=['GET'])
 def get_pessoas():
@@ -65,7 +83,7 @@ def get_pessoas():
                 'uf': dados[10], 'cep': dados[11]}
         result.append(situ)
     db.finalizar_conexao()
-    return json.dumps(result, ensure_ascii=False)
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
 @app.route('/api/funcionarios', methods=['GET'])
@@ -80,7 +98,7 @@ def get_funcionarios():
                 'dataAdmissao': nova_data, 'salario': dados[6]}
         result.append(situ)
     db.finalizar_conexao()
-    return json.dumps(result, ensure_ascii=False)
+    return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
 
