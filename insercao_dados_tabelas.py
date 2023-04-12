@@ -2,6 +2,7 @@ from classConn import DatabaseConnection
 from dados_insercao_pessoas import lista_pessoas
 from dados_insercao_funcionarios import dados_funcionarios
 
+
 db = DatabaseConnection('localhost', 'funcionario', 'root')
 
 # Inserindo valores na tabela situacao

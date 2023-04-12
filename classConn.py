@@ -28,6 +28,7 @@ class DatabaseConnection:
     def query(self, comando, valores=None):
         if valores:
             try:
+                print(self.cursor.execute(comando, valores))
                 self.cursor.execute(comando, valores)
                 #self.cursor.executemany(comando, [(valor,) for valor in valores])
                 self.conn.commit()

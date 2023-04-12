@@ -1,5 +1,5 @@
 from classConn import DatabaseConnection
-from flask import Flask, Response
+from flask import Flask, Response, request
 import simplejson as json
 
 
@@ -12,8 +12,6 @@ def data_string(campo):
 # Inicialização
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
-
-
 app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando ordenação automática
 
 
@@ -186,6 +184,27 @@ def get_funcionariosid(id):
         result.append(situ)
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
+
+# METODO POST
+@app.route('/api/situacao', methods=['POST'])
+def post_situacao():
+    file_content = request.json
+    if type(file_content) == str:
+        file_content = json.loads(file_content)
+    elif type(file_content) == list:
+        pass
+    else:
+        return Response(json.dumps([{'message': 'Formato incorreto'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 400
+
+    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    # IGNORE INTO: Se a descrição já existir na tabela, o comando não fará nada. Caso contrário, ele irá inserir uma
+    # nova linha com a descrição fornecida.
+    comando = 'INSERT IGNORE INTO situacao (desc_situacao) VALUES (?)'
+    for i in file_content:
+        print(db.query(comando, i['descricao']))
+    return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 200
 
 
 app.run()
