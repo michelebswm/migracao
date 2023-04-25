@@ -210,7 +210,7 @@ def post_situacao():
                     (SELECT %s FROM situacao LIMIT 1)
                 END
             WHERE i_situacao = {i['id']};'''
-            db.query(comando, str(i['descricao']))
+            db.query(comando, (i['descricao'], i['descricao']))
 
         else:
             comando = 'INSERT INTO situacao (desc_situacao) VALUES (%s) ON CONFLICT DO NOTHING;'
