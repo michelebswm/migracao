@@ -9,7 +9,7 @@ import json
 #
 # print(response.json())
 
-data = json.dumps([{"descricao": "TESTE3"}])
+data = json.dumps([{"descricao": "TESTE"}])
 
 
 response = requests.post('http://127.0.0.1:5000/api/situacao', json=data)

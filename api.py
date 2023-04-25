@@ -1,6 +1,7 @@
 from classConn import DatabaseConnection
 from flask import Flask, Response, request
 import simplejson as json
+import acesso
 
 
 def data_string(campo):
@@ -17,7 +18,7 @@ app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando 
 
 @app.route('/api/situacao', methods=['GET'])
 def get_situacao():
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
     comando = "SELECT * FROM situacao"
     db.query(comando)
     result = []
@@ -32,9 +33,9 @@ def get_situacao():
 
 @app.route('/api/situacao/<int:id>', methods=['GET'])
 def get_situacaoid(id):
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM situacao WHERE i_situacao = ?"
-    db.query(comando, id)
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+    comando = "SELECT * FROM situacao WHERE i_situacao = %s"
+    db.query(comando, (id,))
     result = []
     # O método fetchone é utilizado para obter a primeira linha do resultado da query.
     # Caso não haja resultados, retorna-se um erro 404.
@@ -51,7 +52,7 @@ def get_situacaoid(id):
 
 @app.route('/api/vinculo', methods=['GET'])
 def get_vinculo():
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
     comando = "SELECT * FROM vinculo"
     db.query(comando)
     result = []
@@ -64,9 +65,9 @@ def get_vinculo():
 
 @app.route('/api/vinculo/<int:id>', methods=['GET'])
 def get_vinculoid(id):
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM vinculo WHERE i_vinculo = ?"
-    db.query(comando, id)
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+    comando = "SELECT * FROM vinculo WHERE i_vinculo = %s"
+    db.query(comando, (id,))
     result = []
     # O método fetchone é utilizado para obter a primeira linha do resultado da query.
     # Caso não haja resultados, retorna-se um erro 404.
@@ -83,7 +84,7 @@ def get_vinculoid(id):
 
 @app.route('/api/cargos', methods=['GET'])
 def get_cargos():
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
     comando = "SELECT * FROM cargos"
     db.query(comando)
     result = []
@@ -96,9 +97,9 @@ def get_cargos():
 
 @app.route('/api/cargos/<int:id>', methods=['GET'])
 def get_cargosid(id):
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM cargos WHERE i_cargo = ?"
-    db.query(comando, id)
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+    comando = "SELECT * FROM cargos WHERE i_cargo = %s"
+    db.query(comando, (id,))
     result = []
     # O método fetchone é utilizado para obter a primeira linha do resultado da query.
     # Caso não haja resultados, retorna-se um erro 404.
@@ -115,7 +116,7 @@ def get_cargosid(id):
 
 @app.route('/api/pessoas', methods=['GET'])
 def get_pessoas():
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
     comando = "SELECT * FROM pessoas"
     db.query(comando)
     result = []
@@ -132,9 +133,9 @@ def get_pessoas():
 
 @app.route('/api/pessoas/<int:id>', methods=['GET'])
 def get_pessoasid(id):
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM pessoas WHERE i_pessoas = ?"
-    db.query(comando, id)
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+    comando = "SELECT * FROM pessoas WHERE i_pessoas = %s"
+    db.query(comando, (id,))
     result = []
     pessoa = db.cursor.fetchone()
     if pessoa is None:
@@ -152,7 +153,7 @@ def get_pessoasid(id):
 
 @app.route('/api/funcionarios', methods=['GET'])
 def get_funcionarios():
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
     comando = "SELECT * FROM funcionarios"
     db.query(comando)
     result = []
@@ -168,9 +169,9 @@ def get_funcionarios():
 
 @app.route('/api/funcionarios/<int:id>', methods=['GET'])
 def get_funcionariosid(id):
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    comando = "SELECT * FROM funcionarios WHERE i_funcionarios = ?"
-    db.query(comando, id)
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+    comando = "SELECT * FROM funcionarios WHERE i_funcionarios = %s"
+    db.query(comando, (id,))
     result = []
     funcionario = db.cursor.fetchone()
     if funcionario is None:
@@ -189,7 +190,7 @@ def get_funcionariosid(id):
 @app.route('/api/situacao', methods=['POST'])
 def post_situacao():
     file_content = request.json
-    if type(file_content) == str:
+    if type(file_content) == str:   # Se for uma string transforma em list com o json.loads
         file_content = json.loads(file_content)
     elif type(file_content) == list:
         pass
@@ -197,14 +198,26 @@ def post_situacao():
         return Response(json.dumps([{'message': 'Formato incorreto'}], ensure_ascii=False),
                         content_type='application/json; charset=utf-8'), 400
 
-    db = DatabaseConnection('localhost', 'funcionario', 'root')
-    # IGNORE INTO: Se a descrição já existir na tabela, o comando não fará nada. Caso contrário, ele irá inserir uma
-    # nova linha com a descrição fornecida.
-    comando = 'INSERT IGNORE INTO situacao (desc_situacao) VALUES (?)'
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+
     for i in file_content:
-        print(db.query(comando, i['descricao']))
-    return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
+        if 'id' in i:
+            comando = f'''UPDATE situacao
+            SET desc_situacao = CASE
+                WHEN EXISTS (SELECT * FROM situacao WHERE i_situacao = {i['id']})
+                    THEN %s
+                ELSE
+                    (SELECT %s FROM situacao LIMIT 1)
+                END
+            WHERE i_situacao = {i['id']};'''
+            db.query(comando, str(i['descricao']))
+
+        else:
+            comando = 'INSERT INTO situacao (desc_situacao) VALUES (%s) ON CONFLICT DO NOTHING;'
+            db.query(comando, (i['descricao'],))
+        return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
                         content_type='application/json; charset=utf-8'), 200
 
 
 app.run()
+

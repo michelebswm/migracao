@@ -1,4 +1,5 @@
-import pyodbc
+import psycopg2
+from psycopg2.errors import UniqueViolation
 
 class DatabaseConnection:
     """
@@ -10,47 +11,48 @@ class DatabaseConnection:
         username (str): Usuário de acesso ao servidor
         password (str): Possui um valor padrão '' que pode ser alterado com a senha de acesso ao servidor
     """
-    def __init__(self, server, database, username, password=''):
+    def __init__(self, server, port, database, username, password):
         self.cursor = None
         self.conn = None
         self.server = server
+        self.port = port
         self.database = database
         self.username = username
         self.password = password
-        self.conectar()
+        self.conectar_postgre()
 
-    def conectar(self):
-        dados_conn = f'DRIVER={{MySQL ODBC 8.0 Unicode Driver}};SERVER={self.server};DATABASE={self.database};UID={self.username};PWD={self.password};encoding=UTF-8'
-        self.conn = pyodbc.connect(dados_conn)
+    def conectar_postgre(self):
+        dados_conn = f'host={self.server} port={self.port} dbname={self.database} user={self.username} password={self.password} sslmode=prefer connect_timeout=10'
+        self.conn = psycopg2.connect(dados_conn)
         self.cursor = self.conn.cursor()
         print('Conexão realizada com Sucesso')
 
     def query(self, comando, valores=None):
         if valores:
             try:
-                print(self.cursor.execute(comando, valores))
+                #print(self.cursor.execute(comando, valores))
                 self.cursor.execute(comando, valores)
                 #self.cursor.executemany(comando, [(valor,) for valor in valores])
                 self.conn.commit()
-            except pyodbc.IntegrityError as e:
+            except psycopg2.errors.UniqueViolation as e:
                 print(f'Ocorreu um erro de Integridade: {e}')
                 self.conn.rollback()    # O método rollback() é chamado para desfazer quaisquer alterações feitas no banco de dados se ocorrer um erro.
         else:
             try:
                 self.cursor.execute(comando)
                 self.conn.commit()
-            except pyodbc.IntegrityError as e:
+            except psycopg2.errors.UniqueViolation as e:
                 print(f'Ocorreu um erro de Integridade: {e}')
                 self.conn.rollback()
 
     def verifica_existencia_tabela(self, tabela):
-        comando = 'SHOW TABLES LIKE "{}"'.format(tabela)
+        comando = "SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = '{}')".format(tabela)
         self.cursor.execute(comando)
-        resultado = len(self.cursor.fetchall())
-        if resultado > 0:
-            return True
-        else:
+        resultado = self.cursor.fetchone()[0]
+        if resultado is False:
             return False
+        else:
+            return True
 
     def criando_tabela(self, tabela, campos):
         resultado = self.verifica_existencia_tabela(tabela)
@@ -66,5 +68,3 @@ class DatabaseConnection:
         self.cursor.close()
         self.conn.close()
         print('Conexao Finalizada com sucesso')
-
-
