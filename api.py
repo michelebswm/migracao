@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 app.json_provider_class = json.JSONEncoder(sort_keys=False)     # Desabilitando ordenação automática
 
-
+# MÉTODO GET all tabela situacao
 @app.route('/api/situacao', methods=['GET'])
 def get_situacao():
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -31,6 +31,7 @@ def get_situacao():
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET id tabela situacao
 @app.route('/api/situacao/<int:id>', methods=['GET'])
 def get_situacaoid(id):
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -49,7 +50,7 @@ def get_situacaoid(id):
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
-
+# MÉTODO GET all tabela vinculo
 @app.route('/api/vinculo', methods=['GET'])
 def get_vinculo():
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -63,6 +64,7 @@ def get_vinculo():
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET id tabela vinculo
 @app.route('/api/vinculo/<int:id>', methods=['GET'])
 def get_vinculoid(id):
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -82,6 +84,7 @@ def get_vinculoid(id):
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET all tabela cargos
 @app.route('/api/cargos', methods=['GET'])
 def get_cargos():
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -95,6 +98,7 @@ def get_cargos():
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET id tabela cargos
 @app.route('/api/cargos/<int:id>', methods=['GET'])
 def get_cargosid(id):
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -114,6 +118,7 @@ def get_cargosid(id):
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET all tabela pessoas
 @app.route('/api/pessoas', methods=['GET'])
 def get_pessoas():
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -131,6 +136,7 @@ def get_pessoas():
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
 
+# MÉTODO GET id tabela pessoas
 @app.route('/api/pessoas/<int:id>', methods=['GET'])
 def get_pessoasid(id):
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -151,6 +157,7 @@ def get_pessoasid(id):
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
 
+# MÉTODO GET all tabela funcionarios
 @app.route('/api/funcionarios', methods=['GET'])
 def get_funcionarios():
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -167,6 +174,7 @@ def get_funcionarios():
     # Convertendo o dicionário para JSON com ensure_ascii=False não da problema quanto de encoding
 
 
+# MÉTODO GET id tabela funcionarios
 @app.route('/api/funcionarios/<int:id>', methods=['GET'])
 def get_funcionariosid(id):
     db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
@@ -186,7 +194,7 @@ def get_funcionariosid(id):
     db.finalizar_conexao()
     return Response(json.dumps(result, ensure_ascii=False), content_type='application/json; charset=utf-8'), 200
 
-# METODO POST
+# METODO POST tabela situacao
 @app.route('/api/situacao', methods=['POST'])
 def post_situacao():
     file_content = request.json
@@ -218,6 +226,69 @@ def post_situacao():
         return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
                         content_type='application/json; charset=utf-8'), 200
 
+# METODO POST tabela vinculo
+@app.route('/api/vinculo', methods=['POST'])
+def post_vinculo():
+    file_content = request.json
+    if type(file_content) == str:   # Se for uma string transforma em list com o json.loads
+        file_content = json.loads(file_content)
+    elif type(file_content) == list:
+        pass
+    else:
+        return Response(json.dumps([{'message': 'Formato incorreto'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 400
+
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+
+    for i in file_content:
+        if 'id' in i:
+            comando = f'''UPDATE vinculo
+            SET desc_vinculo = CASE
+                WHEN EXISTS (SELECT * FROM situacao WHERE i_vinculo = {i['id']})
+                    THEN %s
+                ELSE
+                    (SELECT %s FROM vinculo LIMIT 1)
+                END
+            WHERE i_vinculo = {i['id']};'''
+            db.query(comando, (i['descricao'], i['descricao']))
+
+        else:
+            comando = 'INSERT INTO vinculo (desc_vinculo) VALUES (%s) ON CONFLICT DO NOTHING;'
+            db.query(comando, (i['descricao'],))
+        return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 200
+
+# METODO POST tabela cargos
+@app.route('/api/cargos', methods=['POST'])
+def post_cargos():
+    file_content = request.json
+    if type(file_content) == str:   # Se for uma string transforma em list com o json.loads
+        file_content = json.loads(file_content)
+    elif type(file_content) == list:
+        pass
+    else:
+        return Response(json.dumps([{'message': 'Formato incorreto'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 400
+
+    db = DatabaseConnection(acesso.server, acesso.port, acesso.database, acesso.username, acesso.password)
+
+    for i in file_content:
+        if 'id' in i:
+            comando = f'''UPDATE cargos
+            SET desc_cargo = CASE
+                WHEN EXISTS (SELECT * FROM cargos WHERE i_cargo = {i['id']})
+                    THEN %s
+                ELSE
+                    (SELECT %s FROM cargos LIMIT 1)
+                END
+            WHERE i_cargo = {i['id']};'''
+            db.query(comando, (i['descricao'], i['descricao']))
+
+        else:
+            comando = 'INSERT INTO cargos (desc_cargo) VALUES (%s) ON CONFLICT DO NOTHING;'
+            db.query(comando, (i['descricao'],))
+        return Response(json.dumps([{'message': 'EXECUTADO'}], ensure_ascii=False),
+                        content_type='application/json; charset=utf-8'), 200
 
 app.run()
 
